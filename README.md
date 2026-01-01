@@ -1,4 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="EduML Logo" width="400"/>
+  <img src="logo.png" alt="EduML Logo" width="350"/>
 </p>
-<h3 align="center">An educational Python machine learning library for learning and experimentation.</h3>
+<h5 align="center">An educational Python machine learning library for learning and experimentation.</h5>
+
