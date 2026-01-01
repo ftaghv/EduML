@@ -1,17 +1,15 @@
 # main.py
 import numpy as np
-from linear_model.linear_regression import LinearRegression
+from linear_model.logistic_regression import LogisticRegression
 
-X = np.array([[1,2],[2,3],[3,4]])
-y = np.array([3,5,7])
+X = [[0.5, 1.2],
+     [1.0, 2.0],
+     [1.5, 2.8],
+     [3.0, 4.0]]
 
-model = LinearRegression(epoch=100)
+y = [0, 0, 1, 1]
+
+model = LogisticRegression(epoch=100, optimizer="SGD")
 model.fit(X, y)
-
-y_pred = model.predict(X)
-
-print("Predictions:", y_pred)
-print("Actual:", y)
-
-r2 = model.score(X, y)
-print(r2)
+print("Predictions:", model.predict(X))
+print("Probabilities:", model.predict_proba(X))
