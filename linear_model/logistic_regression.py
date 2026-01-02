@@ -25,12 +25,18 @@ class LogisticRegression:
             self.intercept_ = 0
 
             if self.optimizer == "batch":
+                loss_history = []
                 for i in range(self.epoch):
                     y_pred =  X @ self.coef_ + self.intercept_
                     y_pred = self._sigmoid(y_pred)
                     error = y_pred - y
                     self.coef_ = self.coef_ - self.lr * ((X.T @ error) / n_samples)
                     self.intercept_ = self.intercept_ - self.lr * np.mean(error)
+                    #y_pred = np.clip(y_pred, 1e-15, 1 - 1e-15)
+                    loss = self._binary_cross_entropy(y, y_pred)
+                    loss_history.append(loss)
+                    print(f"Epoch:{i}, Loss:{loss}")
+
             if self.optimizer == "SGD":
                 for i in range(self.epoch):
                     for sample in range(n_samples):
@@ -39,6 +45,7 @@ class LogisticRegression:
                         error = y_pred - y[sample]
                         self.coef_ = self.coef_ - self.lr * (X[sample] * error)
                         self.intercept_ = self.intercept_ - self.lr * error
+
         if self.multi_class == "multinomial":
             X = np.array(X)
             y = np.array(y)
@@ -47,14 +54,18 @@ class LogisticRegression:
             n_features = X.shape[1]
             self.coef_ = np.zeros((n_features, n_classes))
             self.intercept_ = np.zeros(n_classes)
-            y = np.eye(n_classes)[y]
+            y = np.eye(n_classes)[y] #one-hot encoding
             if self.optimizer == "batch":
+                loss_history = []
                 for i in range(self.epoch):
                     y_pred =  X @ self.coef_ + self.intercept_
                     y_pred = self._softmax(y_pred)
                     error = y_pred - y
                     self.coef_ = self.coef_ - self.lr * ((X.T @ error) / n_samples)
                     self.intercept_ = self.intercept_ - self.lr * np.mean(error, axis=0)
+                    loss = self._binary_cross_entropy(y, y_pred)
+                    loss_history.append(loss)
+                    print(f"Epoch:{i}, Loss:{loss}")
 
     def predict(self, X):
         if self.multi_class == "binary":
@@ -113,3 +124,11 @@ class LogisticRegression:
                 if y[i] == y_pred[i]:
                     true_pred += 1
             return true_pred / n_samples
+
+    def _binary_cross_entropy(self, y, y_pred):
+        loss = -(np.mean(y * np.log(y_pred) + (1 - y) * np.log(1 - y_pred)))
+        return loss
+    
+    def _categorical_cross_entropy(self, y, y_pred):
+        loss = -(np.mean(np.sum(y * np.log(y_pred), axis=1)))
+        return loss
