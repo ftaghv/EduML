@@ -1,4 +1,3 @@
-from layers import dense
 class Model:
     def __init__(self, layers=None):
         if layers is None:
@@ -6,7 +5,7 @@ class Model:
         else:
             self.layers = layers
 
-    def add(self, layer: dense):
+    def add(self, layer):
         self.layers.append(layer)
 
     def forward(self, X):

@@ -42,3 +42,52 @@ class LinearRegression:
         r_squared = 1 - (np.mean((y - y_pred) ** 2) / 
                          (np.mean((y - np.mean(y)) ** 2))) 
         return r_squared
+
+    def OLS(self, X, y):
+        X = np.array(X)
+        y = np.array(y).reshape(-1, 1)
+        n_samples = X.shape[0]
+        X = np.hstack([np.ones((n_samples, 1)), X])
+        W = np.linalg.inv(X.T @ X) @ X.T @ y
+        return W
+
+class Ridge(LinearRegression):
+    def __init__(self, epoch: int, alpha):
+        super().__init__(epoch)
+        self.alpha = alpha
+
+    def fit(self, X:np.ndarray , y:np.ndarray):
+        X = np.array(X)
+        self.mean = np.mean(X, axis=0)
+        X_centered = X - self.mean # mean per feature
+        self.X_std = np.std(X, axis=0)
+        X_scaled = X_centered / self.X_std
+        y = np.array(y)
+        num_samples = X.shape[0]
+        num_features = X.shape[1]
+        self.coef_ = np.zeros(shape=num_features)
+        self.intercept_ = 0
+        for i in range(self.epoch):
+            y_pred = X_scaled @ self.coef_ + self.intercept_
+            error = y_pred - y
+            self.coef_ = self.coef_ - self.lr * (((X_scaled.T @ error) / num_samples) + self.alpha * self.coef_)
+            self.intercept_ = self.intercept_ - self.lr * np.mean(error)
+
+class Lasso(Ridge):
+
+    def fit(self, X:np.ndarray , y:np.ndarray):
+        X = np.array(X)
+        self.mean = np.mean(X, axis=0)
+        X_centered = X - self.mean # mean per feature
+        self.X_std = np.std(X, axis=0)
+        X_scaled = X_centered / self.X_std
+        y = np.array(y)
+        num_samples = X.shape[0]
+        num_features = X.shape[1]
+        self.coef_ = np.zeros(shape=num_features)
+        self.intercept_ = 0
+        for i in range(self.epoch):
+            y_pred = X_scaled @ self.coef_ + self.intercept_
+            error = y_pred - y
+            self.coef_ = self.coef_ - self.lr * (((X_scaled.T @ error) / num_samples) + self.alpha * np.sign(self.coef_))
+            self.intercept_ = self.intercept_ - self.lr * np.mean(error)
