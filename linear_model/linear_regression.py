@@ -59,7 +59,7 @@ class Ridge(LinearRegression):
     def fit(self, X:np.ndarray , y:np.ndarray):
         X = np.array(X)
         self.mean = np.mean(X, axis=0)
-        X_centered = X - self.mean # mean per feature
+        X_centered = X - self.mean 
         self.X_std = np.std(X, axis=0)
         X_scaled = X_centered / self.X_std
         y = np.array(y)
@@ -78,7 +78,7 @@ class Lasso(Ridge):
     def fit(self, X:np.ndarray , y:np.ndarray):
         X = np.array(X)
         self.mean = np.mean(X, axis=0)
-        X_centered = X - self.mean # mean per feature
+        X_centered = X - self.mean 
         self.X_std = np.std(X, axis=0)
         X_scaled = X_centered / self.X_std
         y = np.array(y)
@@ -90,4 +90,26 @@ class Lasso(Ridge):
             y_pred = X_scaled @ self.coef_ + self.intercept_
             error = y_pred - y
             self.coef_ = self.coef_ - self.lr * (((X_scaled.T @ error) / num_samples) + self.alpha * np.sign(self.coef_))
+            self.intercept_ = self.intercept_ - self.lr * np.mean(error)
+
+class ElasticNet(Ridge):
+    def __init__(self, epoch: int, alpha, l1_ratio):
+        super().__init__(epoch, alpha)
+        self.l1_ratio = l1_ratio
+
+    def fit(self, X:np.ndarray , y:np.ndarray):
+        X = np.array(X)
+        self.mean = np.mean(X, axis=0)
+        X_centered = X - self.mean 
+        self.X_std = np.std(X, axis=0)
+        X_scaled = X_centered / self.X_std
+        y = np.array(y)
+        num_samples = X.shape[0]
+        num_features = X.shape[1]
+        self.coef_ = np.zeros(shape=num_features)
+        self.intercept_ = 0
+        for i in range(self.epoch):
+            y_pred = X_scaled @ self.coef_ + self.intercept_
+            error = y_pred - y
+            self.coef_ = self.coef_ - self.lr * (((X_scaled.T @ error) / num_samples) + (self.alpha * self.l1_ratio * np.sign(self.coef_)) + (self.alpha *  (1 - self.l1_ratio) * self.coef_))
             self.intercept_ = self.intercept_ - self.lr * np.mean(error)
